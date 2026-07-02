@@ -1,0 +1,27 @@
+{
+  "name": "sheet-blaster",
+  "version": "1.0.0",
+  "description": "Small proof-of-concept script that reads phone numbers + messages straight from a Google Sheet and blasts them out on WhatsApp — one command, no clicking through chats one by one.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CheeseBurrrrger/Sheet-Blaster.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CheeseBurrrrger/Sheet-Blaster/issues"
+  },
+  "homepage": "https://github.com/CheeseBurrrrger/Sheet-Blaster#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "googleapis": "^173.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.34.7"
+  }
+}
