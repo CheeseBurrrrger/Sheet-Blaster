@@ -147,3 +147,5 @@ vite.config.ts.timestamp-*
 # WhatsApp session cache 
 .wwebjs_auth/
 .wwebjs_cache/
+
+whatsapp-qr.png

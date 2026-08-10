@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Team Map</title>
+<style>
+  :root{
+    --paper:#F4F1E8;
+    --card:#FFFDF8;
+    --ink:#1F2A38;
+    --ink-soft:#5B6472;
+    --line:#DAD3C2;
+    --teal:#3C6E6A;
+    --teal-deep:#274A47;
+    --amber:#D9A441;
+    --rose:#B5654F;
+    --sage:#7C9885;
+    --slate:#5B6E8C;
+    --tag-colors: var(--teal), var(--amber), var(--rose), var(--sage), var(--slate);
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, transparent 1px, transparent 34px);
+    font-family: 'Courier New', ui-monospace, monospace;
+    color:var(--ink);
+    padding: 28px 20px 60px;
+    min-height:100vh;
+  }
+  .wrap{max-width:920px; margin:0 auto;}
+  header{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-bottom: 2px solid var(--ink); padding-bottom:14px; margin-bottom:22px;
+    flex-wrap:wrap; gap:12px;
+  }
+  h1{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight:700; font-size:28px; letter-spacing:0.3px; margin:0;
+  }
+  .sub{color:var(--ink-soft); font-size:12.5px; margin-top:4px;}
+  .addbtn{
+    background:var(--teal); color:var(--paper); border:none; border-radius:6px;
+    padding:10px 16px; font-family:inherit; font-size:13px; font-weight:700;
+    cursor:pointer; letter-spacing:0.3px;
+  }
+  .addbtn:hover{background:var(--teal-deep);}
+  .toolbar{display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;}
+  input[type=text], textarea, select{
+    font-family:inherit; background:var(--card); border:1px solid var(--line);
+    border-radius:6px; padding:9px 11px; color:var(--ink); font-size:13.5px;
+  }
+  #search{flex:1; min-width:180px;}
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:16px;
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 16px 16px; position:relative; box-shadow:0 1px 0 rgba(0,0,0,0.04);
+    border-top: 5px solid var(--teal);
+  }
+  .card .name{
+    font-family: Georgia, serif; font-weight:700; font-size:17px; margin:2px 0 1px;
+  }
+  .card .role{color:var(--ink-soft); font-size:12.5px; margin-bottom:8px; font-style:italic;}
+  .card .dept{
+    display:inline-block; font-size:10.5px; letter-spacing:0.5px; text-transform:uppercase;
+    color:#fff; background:var(--teal); padding:2px 7px; border-radius:4px; margin-bottom:9px;
+  }
+  .card .resp{font-size:12.5px; line-height:1.5; color:var(--ink); white-space:pre-wrap;}
+  .card .actions{
+    display:flex; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--line);
+  }
+  .card .actions button{
+    background:none; border:none; color:var(--ink-soft); font-family:inherit;
+    font-size:11.5px; cursor:pointer; text-decoration:underline; padding:0;
+  }
+  .card .actions button:hover{color:var(--ink);}
+  .empty{
+    color:var(--ink-soft); font-size:13px; padding:40px 10px; text-align:center;
+    border:1px dashed var(--line); border-radius:var(--radius); background:var(--card);
+  }
+  .overlay{
+    position:fixed; inset:0; background:rgba(31,42,56,0.45); display:none;
+    align-items:center; justify-content:center; z-index:10; padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--card); border-radius:var(--radius); padding:22px; width:100%; max-width:420px;
+    border:1px solid var(--line);
+  }
+  .modal h2{font-family:Georgia,serif; margin:0 0 14px; font-size:19px;}
+  .field{margin-bottom:12px; display:flex; flex-direction:column; gap:5px;}
+  .field label{font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-soft);}
+  .field textarea{resize:vertical; min-height:64px;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:6px;}
+  .btn-secondary{
+    background:none; border:1px solid var(--line); border-radius:6px; padding:9px 14px;
+    font-family:inherit; cursor:pointer; font-size:13px; color:var(--ink-soft);
+  }
+  .btn-primary{
+    background:var(--ink); color:var(--paper); border:none; border-radius:6px;
+    padding:9px 16px; font-family:inherit; cursor:pointer; font-size:13px; font-weight:700;
+  }
+  .status{font-size:11px; color:var(--ink-soft); margin-top:18px; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Team Map</h1>
+      <div class="sub">who's who on the internship — tap "+ person" as you meet people</div>
+    </div>
+    <button class="addbtn" onclick="openModal()">+ Person</button>
+  </header>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Search name, role, or department…" oninput="render()">
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <div class="status" id="status"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">Add person</h2>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="f-name" placeholder="e.g. Bu Sinta">
+    </div>
+    <div class="field">
+      <label>Role / Title</label>
+      <input type="text" id="f-role" placeholder="e.g. Data Engineering Lead">
+    </div>
+    <div class="field">
+      <label>Team / Department</label>
+      <input type="text" id="f-dept" placeholder="e.g. Data Platform">
+    </div>
+    <div class="field">
+      <label>Responsibilities / go to them for…</label>
+      <textarea id="f-resp" placeholder="e.g. Owns the ETL pipeline, approves data access requests, ask about Airflow issues"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="savePerson()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'team-map:people';
+let people = [];
+let editingId = null;
+const deptColors = {};
+const palette = ['#3C6E6A','#D9A441','#B5654F','#7C9885','#5B6E8C','#8B5FA3'];
+
+function colorForDept(dept){
+  const key = (dept || 'general').trim().toLowerCase();
+  if(!deptColors[key]){
+    const idx = Object.keys(deptColors).length % palette.length;
+    deptColors[key] = palette[idx];
+  }
+  return deptColors[key];
+}
+
+async function load(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY);
+    people = res ? JSON.parse(res.value) : [];
+  }catch(e){
+    people = [];
+  }
+  render();
+}
+
+async function persist(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(people));
+    setStatus('Saved');
+  }catch(e){
+    setStatus('Could not save — try again');
+  }
+}
+
+function setStatus(msg){
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 1500);
+}
+
+function openModal(id){
+  editingId = id || null;
+  document.getElementById('modalTitle').textContent = id ? 'Edit person' : 'Add person';
+  if(id){
+    const p = people.find(p=>p.id===id);
+    document.getElementById('f-name').value = p.name;
+    document.getElementById('f-role').value = p.role;
+    document.getElementById('f-dept').value = p.dept;
+    document.getElementById('f-resp').value = p.resp;
+  } else {
+    ['f-name','f-role','f-dept','f-resp'].forEach(id=>document.getElementById(id).value='');
+  }
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function savePerson(){
+  const name = document.getElementById('f-name').value.trim();
+  if(!name){ return; }
+  const data = {
+    name,
+    role: document.getElementById('f-role').value.trim(),
+    dept: document.getElementById('f-dept').value.trim(),
+    resp: document.getElementById('f-resp').value.trim()
+  };
+  if(editingId){
+    const p = people.find(p=>p.id===editingId);
+    Object.assign(p, data);
+  } else {
+    people.push({ id: 'p_'+Date.now(), ...data });
+  }
+  closeModal();
+  persist();
+  render();
+}
+
+function deletePerson(id){
+  people = people.filter(p=>p.id!==id);
+  persist();
+  render();
+}
+
+function render(){
+  const grid = document.getElementById('grid');
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  const filtered = people.filter(p=>
+    !q || [p.name,p.role,p.dept,p.resp].join(' ').toLowerCase().includes(q)
+  );
+  grid.innerHTML = '';
+  if(filtered.length === 0){
+    grid.innerHTML = `<div class="empty">${people.length===0
+      ? "No one added yet — tap “+ Person” to start mapping your team."
+      : "No matches. Try a different search."}</div>`;
+    return;
+  }
+  filtered.forEach(p=>{
+    const color = colorForDept(p.dept);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.borderTopColor = color;
+    card.innerHTML = `
+      ${p.dept ? `<span class="dept" style="background:${color}">${escapeHtml(p.dept)}</span>` : ''}
+      <div class="name">${escapeHtml(p.name)}</div>
+      ${p.role ? `<div class="role">${escapeHtml(p.role)}</div>` : ''}
+      ${p.resp ? `<div class="resp">${escapeHtml(p.resp)}</div>` : ''}
+      <div class="actions">
+        <button onclick="openModal('${p.id}')">edit</button>
+        <button onclick="deletePerson('${p.id}')">delete</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+load();
+</script>
+</body>
+</html>
